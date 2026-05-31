@@ -21,20 +21,9 @@
         </button>
     </header>
 
-    <!-- 分頁切換頁籤 -->
-    <div class="flex border-b border-slate-200 bg-white sticky top-[60px] z-40 shadow-sm">
-        <button onclick="switchTab('itinerary')" id="tab-itinerary" class="flex-1 py-3 text-center text-sm font-medium border-b-2 border-indigo-600 text-indigo-600 transition-all">
-            <i class="fa-solid fa-calendar-days mr-1"></i> 雲端行程表
-        </button>
-        <button onclick="switchTab('accounting')" id="tab-accounting" class="flex-1 py-3 text-center text-sm font-medium border-b-2 border-transparent text-slate-500 transition-all">
-            <i class="fa-solid fa-wallet mr-1"></i> 智能分帳 (÷4)
-        </button>
-    </div>
-
     <!-- 主內容區 -->
     <main class="max-w-md mx-auto p-4">
-        
-        <!-- 分頁 1: 行程表 -->
+        <!-- 行程表區塊 -->
         <section id="sec-itinerary" class="space-y-4">
             <div id="itinerary-list" class="space-y-4">
                 <div class="text-center py-8 text-slate-400">
@@ -43,41 +32,9 @@
                 </div>
             </div>
         </section>
-
-        <!-- 分頁 2: 記帳分帳 -->
-        <section id="sec-accounting" class="hidden space-y-4">
-            <!-- 記帳輸入面板（提示文字安全模糊） -->
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
-                <h3 class="font-bold text-slate-700 flex items-center gap-1">
-                    <i class="fa-solid fa-calculator text-indigo-500"></i> 新增隨手記帳
-                </h3>
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="bill-title" placeholder="品項 (如: 晚餐/紀念品)" class="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-indigo-500">
-                    <input type="number" id="bill-amount" placeholder="金額 (當地貨幣)" class="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-indigo-500">
-                </div>
-                <button onclick="addBill()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-lg text-sm shadow transition-all">
-                    上傳雲端記帳
-                </button>
-            </div>
-
-            <!-- 分帳統計卡片 -->
-            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-4 rounded-2xl shadow-md flex justify-between items-center">
-                <div>
-                    <p class="text-xs text-indigo-100">目前總花費 (台幣估算)</p>
-                    <p class="text-2xl font-black mt-1">NT$ <span id="total-tw">0</span></p>
-                </div>
-                <div class="text-right border-l border-indigo-400/50 pl-4">
-                    <p class="text-xs text-indigo-100">每人平均 (除以 4)</p>
-                    <p class="text-lg font-bold mt-1">NT$ <span id="per-person-tw">0</span></p>
-                </div>
-            </div>
-
-            <!-- 帳目清單 -->
-            <div id="bills-list" class="space-y-2"></div>
-        </section>
     </main>
 
-    <!-- 彈出視窗: 新增/編輯行程（提示輸入框安全模糊，保障個人隱私） -->
+    <!-- 彈出視窗: 新增/編輯行程 -->
     <div id="modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl space-y-4 animate-fade-in">
             <h3 id="modal-title" class="text-lg font-bold text-slate-800">新增行程點</h3>
@@ -85,17 +42,15 @@
             <div class="space-y-3">
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">日期與時間</label>
-                    <!-- 模糊化引導：不用寫出具體航班號碼，寫大略時間即可 -->
                     <input type="text" id="form-time" placeholder="例如: 7/12 上午 10:00" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-indigo-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">地點名稱</label>
-                    <!-- 模糊化引導：私密飯店寫大略位置即可（如：火車站旁飯店），觀光景點可以直接寫出來 -->
                     <input type="text" id="form-location" placeholder="例如: 查理大橋 / 市中心飯店" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-indigo-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">隨行備註</label>
-                    <textarea id="form-note" rows="2" placeholder="例如: 爸媽在此登台演出、買可頌、拍照注意事項..." class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-indigo-500"></textarea>
+                    <textarea id="form-note" rows="2" placeholder="例如: 拍照注意事項、集合地點..." class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-indigo-500"></textarea>
                 </div>
             </div>
             <div class="flex gap-2 justify-end pt-2">
@@ -129,31 +84,41 @@
 
     <!-- 網頁互動邏輯 JS -->
     <script>
-        const CZK_TO_TWD = 1.4; // 匯率（可依照去歐洲時的即時匯率自由微調）
-
-        function switchTab(tab) {
-            document.getElementById('sec-itinerary').classList.toggle('hidden', tab !== 'itinerary');
-            document.getElementById('sec-accounting').classList.toggle('hidden', tab !== 'accounting');
-            
-            const tItinerary = document.getElementById('tab-itinerary');
-            const tAccounting = document.getElementById('tab-accounting');
-            if(tab === 'itinerary') {
-                tItinerary.className = "flex-1 py-3 text-center text-sm font-medium border-b-2 border-indigo-600 text-indigo-600 transition-all";
-                tAccounting.className = "flex-1 py-3 text-center text-sm font-medium border-b-2 border-transparent text-slate-500 transition-all";
-            } else {
-                tItinerary.className = "flex-1 py-3 text-center text-sm font-medium border-b-2 border-transparent text-slate-500 transition-all";
-                tAccounting.className = "flex-1 py-3 text-center text-sm font-medium border-b-2 border-indigo-600 text-indigo-600 transition-all";
+        // 初始化預設行程數據（私人訊息已做大略模糊處理，景點具體保留）
+        function checkAndInitDefaultData(db, ref, set, push, listData) {
+            if (!listData) {
+                const defaultItinerary = [
+                    { time: "7/12 上午", location: "出發 ✈️ 飛往東歐漫遊", note: "全家搭機出發度假！注意爸爸媽媽的隨身行李與長途飛行舒適度。" },
+                    { time: "7/12 下午", location: "抵達維也納 (市中心火車站旁飯店)", note: "辦理 Check-in、放置行李。全家人先在飯店附近散步吃點東西、調時差，開啟慢活節奏。" },
+                    { time: "7/15 10:00", location: "布拉格 🇨🇿 查理大橋漫步", note: "波西米亞風情超美！一定要幫爸爸媽媽多拍幾張網美照。順便找找附近朝聖人氣烘焙坊買厲害的可頌當點心。" }
+                ];
+                
+                defaultItinerary.forEach(item => {
+                    const newRef = push(ref(db, 'itinerary'));
+                    set(newRef, item);
+                });
             }
         }
 
         // 實時監聽雲端數據
         setTimeout(() => {
             if(!window.dbRef) return;
-            const { db, ref, onValue } = window.dbRef;
+            const { db, ref, onValue, set, push } = window.dbRef;
 
-            // 1. 監聽並渲染行程
+            let isFirstLoad = true;
+
+            // 監聽並渲染行程
             onValue(ref(db, 'itinerary'), (snapshot) => {
                 const listData = snapshot.val();
+                
+                // 第一次載入時，如果發現雲端完全沒資料，就自動幫忙塞入預設行程
+                if (isFirstLoad && !listData) {
+                    checkAndInitDefaultData(db, ref, set, push, listData);
+                    isFirstLoad = false;
+                    return; 
+                }
+                isFirstLoad = false;
+
                 const container = document.getElementById('itinerary-list');
                 container.innerHTML = '';
                 
@@ -161,7 +126,7 @@
                     container.innerHTML = `
                         <div class="text-center py-12 text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
                             <i class="fa-solid fa-map-location-dot text-3xl mb-2 text-slate-300"></i>
-                            <p class="text-sm">雲端目前是空的，快點擊右上角「新增點」輸入妳們的實際行程吧！</p>
+                            <p class="text-sm">雲端目前是空的，快點擊右上角「新增點」輸入行程吧！</p>
                         </div>`;
                     return;
                 }
@@ -185,31 +150,6 @@
                             </div>
                         </div>`;
                 });
-            });
-
-            // 2. 監聽並渲染分帳
-            onValue(ref(db, 'bills'), (snapshot) => {
-                const billsData = snapshot.val();
-                const container = document.getElementById('bills-list');
-                container.innerHTML = '';
-                
-                let totalTWD = 0;
-                if (billsData) {
-                    Object.entries(billsData).forEach(([key, val]) => {
-                        const twd = Math.round(val.amount * CZK_TO_TWD);
-                        totalTWD += twd;
-                        container.innerHTML += `
-                            <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center">
-                                <div>
-                                    <p class="font-semibold text-slate-700 text-sm">${val.title}</p>
-                                    <p class="text-xs text-slate-400">${val.amount} 當地貨幣 (約 NT$ ${twd})</p>
-                                </div>
-                                <button onclick="deleteItem('bills', '${key}')" class="text-slate-300 hover:text-rose-500 text-xs p-1"><i class="fa-solid fa-xmark"></i></button>
-                            </div>`;
-                    });
-                }
-                document.getElementById('total-tw').innerText = totalTWD.toLocaleString();
-                document.getElementById('per-person-tw').innerText = Math.round(totalTWD / 4).toLocaleString();
             });
 
         }, 1000);
@@ -250,21 +190,6 @@
             set(targetRef, { time, location, note }).then(() => {
                 closeModal();
             }).catch(err => alert('同步失敗，請檢查網路！'));
-        }
-
-        // 記帳上傳雲端
-        function addBill() {
-            const title = document.getElementById('bill-title').value.trim();
-            const amount = parseFloat(document.getElementById('bill-amount').value);
-
-            if(!title || isNaN(amount)) { alert('請填入正確的品項和金額！'); return; }
-
-            const { db, ref, push, set } = window.dbRef;
-            const newBillRef = push(ref(db, 'bills'));
-            set(newBillRef, { title, amount }).then(() => {
-                document.getElementById('bill-title').value = '';
-                document.getElementById('bill-amount').value = '';
-            });
         }
 
         // 從雲端刪除項目
