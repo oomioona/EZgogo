@@ -3,85 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EZgo 2026 夏日東歐探險</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>EZgo 2026 東歐大冒險</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body { background-color: #FDFBF7; }
     </style>
 </head>
-<body class="bg-sky-50/60 text-slate-800 font-sans antialiased pb-24">
+<body class="text-stone-800 antialiased pb-24">
 
-    <div id="app" class="max-w-md mx-auto min-h-screen bg-white shadow-xl flex flex-col relative">
-
-        <header class="sticky top-0 z-50 bg-gradient-to-r from-cyan-400 to-blue-400 text-white shadow-md px-4 py-4 flex justify-between items-center">
+    <div id="app" class="max-w-md mx-auto min-h-screen bg-[#FDFBF7] flex flex-col">
+        <header class="sticky top-0 z-50 bg-[#FDFBF7]/90 backdrop-blur-sm border-b border-stone-200 px-4 py-3 flex justify-between items-center">
             <div>
-                <h1 class="text-xl font-black tracking-wider flex items-center gap-1"><span>EZgo! Europe Go!</span> 🍋</h1>
-                <p class="text-xs text-cyan-100 font-medium">7/12 - 7/22 東歐盛夏漫遊</p>
+                <h1 class="text-lg font-black text-stone-800">EZgo! 2026 🍋</h1>
+                <p class="text-xs text-stone-400 font-bold tracking-widest">7/12 - 7/22 東歐漫遊</p>
             </div>
-            <div class="flex items-center gap-2">
-                <button @click="currentTab = 'shopping'" :class="currentTab === 'shopping' ? 'bg-pink-400 scale-110' : 'bg-white/20'" class="w-10 h-10 rounded-full flex items-center justify-center transition-all"><i class="fa-solid fa-bag-shopping text-white"></i></button>
-                <button @click="openAddModal" class="bg-amber-400 text-slate-900 text-xs font-black px-3 py-2 rounded-full shadow transition-all"><i class="fa-solid fa-plus"></i> 新增點</button>
-            </div>
+            <button @click="openAddModal" class="bg-stone-800 text-white text-xs font-black px-4 py-2 rounded-full shadow-lg flex items-center gap-1.5 hover:bg-stone-700">
+                <i class="fa-solid fa-plus"></i> 新增
+            </button>
         </header>
 
-        <div class="bg-white border-b border-cyan-100 sticky top-[72px] z-40 shadow-sm">
-            <div class="flex gap-3 overflow-x-auto px-4 py-3 no-scrollbar">
-                <button @click="currentTab = 'todo'" :class="currentTab === 'todo' ? 'bg-emerald-400 text-white' : 'bg-emerald-50 text-emerald-600'" class="flex-shrink-0 border px-3 py-2 rounded-2xl text-center min-w-[76px]">
-                    <p class="text-xs font-black">準備</p>
-                    <p class="text-[10px] font-bold opacity-80">PRE</p>
-                </button>
-                <button v-for="item in travelDates" :key="item.date" @click="selectDate(item.date)" :class="currentTab === 'itinerary' && currentSelectedDate === item.date ? 'bg-amber-400 text-slate-900' : 'bg-white text-slate-600 border'" class="flex-shrink-0 border px-3 py-2 rounded-2xl text-center min-w-[76px]">
+        <div class="bg-[#FDFBF7] border-b border-stone-100 sticky top-[60px] z-40">
+            <div class="flex gap-2 overflow-x-auto px-4 py-2 no-scrollbar">
+                <button v-for="item in travelDates" :key="item.date" @click="currentSelectedDate = item.date" 
+                    :class="currentSelectedDate === item.date ? 'bg-stone-800 text-white' : 'bg-white text-stone-600 border border-stone-200'" 
+                    class="flex-shrink-0 border px-4 py-2 rounded-xl text-center min-w-[70px] transition-all shadow-sm">
                     <p class="text-sm font-black">{{ item.date }}</p>
-                    <p class="text-[10px] font-bold opacity-80">Day {{ item.day }}</p>
+                    <p class="text-[10px] font-bold opacity-70">Day {{ item.day }}</p>
                 </button>
             </div>
         </div>
 
         <main class="flex-1 p-4 space-y-4">
-            <div v-if="currentTab === 'itinerary'" class="space-y-4">
-                <div class="space-y-4 relative before:absolute before:top-2 before:bottom-2 before:left-3.5 before:w-0.5 before:bg-cyan-100">
-                    <div v-for="item in sortedItinerary" :key="item.id" class="flex gap-4 items-start relative">
-                        <template v-if="item.type === 'transit'">
-                            <div class="w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-[10px] z-10 flex-shrink-0 ring-4 ring-white mt-1">
-                                <i class="fa-solid fa-train-subway"></i>
-                            </div>
-                            <div class="flex-1 bg-slate-50 border border-dashed border-slate-300 p-3 rounded-2xl text-center">
-                                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{{ item.location }}</p>
-                                <p class="text-[10px] text-slate-400 mt-1">{{ item.note }}</p>
-                            </div>
-                        </template>
-                        <template v-else>
-                            <div class="w-7 h-7 rounded-full bg-cyan-400 text-white flex items-center justify-center font-bold text-[10px] z-10 flex-shrink-0 ring-4 ring-white mt-1">📍</div>
-                            <div class="flex-1 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-2">
-                                <div class="flex justify-between items-start gap-2">
-                                    <div class="flex items-center gap-2"><span class="bg-cyan-50 text-cyan-600 text-xs font-black px-2 py-0.5 rounded-md">{{ item.time }}</span><h4 class="text-base font-black text-slate-800">{{ item.location }}</h4></div>
-                                    <div class="flex gap-2">
-                                        <a :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(item.location)" target="_blank" class="text-sky-400 bg-sky-50 w-7 h-7 rounded-full flex items-center justify-center"><i class="fa-solid fa-location-arrow"></i></a>
-                                        <button @click="openEditModal(item)" class="text-slate-400"><i class="fa-solid fa-pen"></i></button>
-                                        <button @click="deleteItem(item.id)" class="text-slate-400"><i class="fa-solid fa-trash-can"></i></button>
-                                    </div>
+            <div class="bg-amber-50 border border-amber-100 rounded-xl px-4 py-2 flex justify-between items-center text-stone-700 text-sm font-bold">
+                <span>當日天氣預測 🌤️</span>
+                <span class="font-black">{{ weatherStatus }}</span>
+            </div>
+
+            <div class="relative before:absolute before:top-2 before:bottom-2 before:left-[18px] before:w-0.5 before:bg-stone-200 space-y-4">
+                <div v-for="item in sortedItinerary" :key="item.id" class="flex gap-4 items-start relative group">
+                    <!-- Icon -->
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 z-10 border-4 border-[#FDFBF7]"
+                        :class="item.type === 'transit' ? 'bg-stone-300 text-white' : 'bg-stone-800 text-white'">
+                        <i :class="item.type === 'transit' ? 'fa-solid fa-train-subway' : 'fa-solid fa-location-pin text-[14px]'"></i>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1">
+                        <div v-if="item.type === 'transit'" class="border border-dashed border-stone-300 bg-stone-50 p-3 rounded-2xl">
+                            <div class="flex justify-between items-center mb-1">
+                                <h4 class="text-base font-black text-stone-800">{{ item.location }}</h4>
+                                <div class="flex gap-2 text-stone-400 text-xs">
+                                    <button @click="moveItem(item, -1)"><i class="fa-solid fa-chevron-up"></i></button>
+                                    <button @click="moveItem(item, 1)"><i class="fa-solid fa-chevron-down"></i></button>
+                                    <button @click="openEditModal(item)"><i class="fa-solid fa-pen"></i></button>
+                                    <button @click="deleteItem(item.id)" class="text-red-400"><i class="fa-solid fa-trash-can"></i></button>
                                 </div>
-                                <p class="text-sm text-slate-600 bg-slate-50 p-2.5 rounded-xl">{{ item.note }}</p>
                             </div>
-                        </template>
+                            <p v-if="item.note" class="text-[10px] text-stone-500 font-bold mt-1">備註：{{ item.note }}</p>
+                        </div>
+
+                        <div v-else class="bg-white p-3 rounded-2xl border border-stone-100 shadow-sm">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="bg-stone-100 text-stone-700 text-xs font-black px-1.5 py-0.5 rounded">{{ item.time }}</span>
+                                    <span v-if="item.category" class="bg-amber-100 text-amber-800 text-xs font-bold px-1.5 py-0.5 rounded">{{ item.category }}</span>
+                                    <span class="text-base font-black text-stone-800">{{ item.location }}</span>
+                                </div>
+                                <div class="flex gap-2 text-stone-400 text-xs">
+                                    <button @click="moveItem(item, -1)"><i class="fa-solid fa-chevron-up"></i></button>
+                                    <button @click="moveItem(item, 1)"><i class="fa-solid fa-chevron-down"></i></button>
+                                    <a :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(item.location)" target="_blank"><i class="fa-solid fa-location-arrow text-blue-400"></i></a>
+                                    <button @click="openEditModal(item)"><i class="fa-solid fa-pen"></i></button>
+                                    <button @click="deleteItem(item.id)" class="text-red-400"><i class="fa-solid fa-trash-can"></i></button>
+                                </div>
+                            </div>
+                            <p v-if="item.note" class="text-[10px] text-stone-600 bg-stone-50 p-2 rounded-lg italic">{{ item.note }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
 
-        <div v-if="showModal" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
-                <h3 class="text-lg font-black">{{ modalForm.id ? '✏️ 修改' : '🚀 新增' }}</h3>
-                <input v-model="modalForm.time" placeholder="時間 (如 10:00)" class="w-full border rounded-xl px-3 py-2 text-sm">
-                <input v-model="modalForm.location" placeholder="地點" class="w-full border rounded-xl px-3 py-2 text-sm">
-                <select v-model="modalForm.type" class="w-full border rounded-xl px-3 py-2 text-sm"><option value="event">行程點</option><option value="transit">交通</option></select>
-                <textarea v-model="modalForm.note" placeholder="備註..." class="w-full border rounded-xl px-3 py-2 text-sm"></textarea>
-                <div class="flex gap-2 justify-end">
-                    <button @click="showModal = false" class="px-4 py-2 text-sm font-bold text-slate-400">取消</button>
-                    <button @click="saveItinerary" class="px-4 py-2 text-sm bg-cyan-400 text-white font-black rounded-xl">儲存</button>
+        <div v-if="showModal" class="fixed inset-0 bg-stone-900/40 z-[999] flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4">
+                <h3 class="text-lg font-black text-stone-800">{{ modalForm.id ? '✏️ 修改行程' : '🚀 新增行程' }}</h3>
+                <div class="space-y-3">
+                    <select v-model="modalForm.type" class="w-full border border-stone-200 rounded-lg p-2 text-sm font-bold bg-stone-50">
+                        <option value="event">📍 景點/活動</option>
+                        <option value="transit">🚆 交通方式</option>
+                    </select>
+                    <select v-if="modalForm.type === 'event'" v-model="modalForm.category" class="w-full border border-stone-200 rounded-lg p-2 text-sm font-bold bg-stone-50">
+                        <option value="住宿">🏠 住宿</option><option value="美食">😋 美食</option><option value="購物">🛍️ 購物</option><option value="景點">🗺️ 景點</option>
+                    </select>
+                    <input type="text" v-model="modalForm.time" placeholder="時間 (如 10:00)" class="w-full border border-stone-200 rounded-lg p-2 text-sm bg-stone-50">
+                    <input type="text" v-model="modalForm.location" placeholder="地點或交通方式" class="w-full border border-stone-200 rounded-lg p-2 text-sm bg-stone-50">
+                    <textarea v-model="modalForm.note" placeholder="備註..." class="w-full border border-stone-200 rounded-lg p-2 text-sm bg-stone-50 h-20"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" @click="showModal = false" class="flex-1 py-3 text-sm font-bold text-stone-400 bg-stone-100 rounded-lg">取消</button>
+                    <button type="button" @click="saveItinerary" class="flex-1 py-3 text-sm font-black text-white bg-stone-800 rounded-lg">儲存</button>
                 </div>
             </div>
         </div>
@@ -89,39 +112,37 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
         const db = getDatabase(initializeApp({ projectId: "ezgogo-c29e5", databaseURL: "https://ezgogo-c29e5-default-rtdb.firebaseio.com/" }));
         const { createApp, ref: vRef, computed, onMounted } = Vue;
 
         createApp({
             setup() {
-                const currentTab = vRef('itinerary'), currentSelectedDate = vRef('7/12'), globalItineraryData = vRef({}), showModal = vRef(false), modalForm = vRef({});
+                const currentSelectedDate = vRef('7/12'), globalItineraryData = vRef({}), showModal = vRef(false), modalForm = vRef({});
                 const travelDates = Array.from({length: 11}, (_, i) => ({ day: i + 1, date: `7/${12 + i}` }));
-                const seedData = [
-                    { date: '7/12', time: '08:30', location: '維也納機場', note: '抵達！', type: 'event' },
-                    { date: '7/12', time: 'TRANSIT', location: 'RJ快車', note: '前往中央車站', type: 'transit' },
-                    { date: '7/12', time: '10:30', location: '聖史蒂芬大教堂', note: '炸豬排午餐', type: 'event' },
-                    { date: '7/12', time: 'TRANSIT', location: 'OBB跨國火車', note: '前往布拉格', type: 'transit' },
-                    { date: '7/12', time: '19:23', location: '布拉格中央車站', note: '抵達', type: 'event' },
-                    { date: '7/13', time: '09:30', location: '路面輕軌', note: '市區體驗', type: 'transit' },
-                    { date: '7/13', time: '10:00', location: '幻覺藝術博物館', note: '拍照互動', type: 'event' },
-                    { date: '7/13', time: '13:00', location: 'U Pavouka 地窖餐廳', note: '大口吃烤豬腳', type: 'event' },
-                    { date: '7/13', time: '15:00', location: '哈維爾市集', note: '煙囪捲', type: 'event' },
-                    { date: '7/14', time: '09:30', location: '布拉格城堡', note: '朝聖', type: 'event' },
-                    { date: '7/14', time: '12:30', location: '城堡區景觀餐廳', note: '午餐', type: 'event' },
-                    { date: '7/14', time: '14:30', location: '查理大橋', note: '摸雕像', type: 'event' },
-                    { date: '7/14', time: '15:30', location: '伏爾塔瓦河畔', note: '餵大天鵝', type: 'event' },
-                    { date: '7/14', time: '16:30', location: 'Riegrovy sady 公園', note: '夕陽啤酒', type: 'event' },
-                    { date: '7/15', time: '10:00', location: 'Jiřího z Poděbrad 市集', note: '野餐', type: 'event' },
-                    { date: '7/15', time: '12:30', location: '公寓', note: '午休準備', type: 'event' },
-                    { date: '7/15', time: '15:30', location: '舊城廣場', note: '天文鐘', type: 'event' },
-                    { date: '7/15', time: '18:00', location: '索菲宮殿', note: '表演夜', type: 'event' },
-                    { date: '7/16', time: '07:30', location: 'Prokop Coffee', note: '巨無霸可頌', type: 'event' },
-                    { date: '7/16', time: '09:44', location: 'OBB高鐵', note: '前往布達佩斯', type: 'transit' }
-                ];
-                onMounted(() => { onValue(ref(db, 'itinerary'), (s) => { if(!s.exists()) seedData.forEach(d => push(ref(db, 'itinerary'), d)); else globalItineraryData.value = s.val(); }); });
-                const sortedItinerary = computed(() => Object.entries(globalItineraryData.value || {}).map(([id, val]) => ({ id, ...val })).filter(i => i.date === currentSelectedDate.value).sort((a,b) => a.time.localeCompare(b.time)));
-                return { currentTab, currentSelectedDate, travelDates, sortedItinerary, showModal, modalForm, openAddModal: (i) => { modalForm.value = { date: currentSelectedDate.value, type: 'event' }; showModal.value = true; }, openEditModal: (i) => { modalForm.value = { ...i }; showModal.value = true; }, saveItinerary: () => { const r = modalForm.value.id ? ref(db, `itinerary/${modalForm.value.id}`) : push(ref(db, 'itinerary')); set(r, { ...modalForm.value }); showModal.value = false; }, deleteItem: (id) => remove(ref(db, `itinerary/${id}`)), selectDate: (d) => currentSelectedDate.value = d };
+                const weatherStatus = computed(() => {
+                    const d = parseInt(currentSelectedDate.value.split('/')[1]);
+                    return d <= 16 ? '布拉格 25°C ☀️' : d <= 19 ? '布達佩斯 28°C 🌤️' : '維也納 24°C ☁️';
+                });
+                onMounted(() => { onValue(ref(db, 'itinerary'), (s) => { globalItineraryData.value = s.val() || {}; }); });
+                const sortedItinerary = computed(() => Object.entries(globalItineraryData.value).map(([id, val]) => ({ id, ...val })).filter(i => i.date === currentSelectedDate.value).sort((a,b) => (a.order || 0) - (b.order || 0)));
+                const moveItem = async (item, dir) => {
+                    const list = sortedItinerary.value;
+                    const idx = list.findIndex(i => i.id === item.id);
+                    const target = list[idx + dir];
+                    if (target) {
+                        const newOrder = target.order || 0;
+                        const oldOrder = item.order || 0;
+                        await update(ref(db, `itinerary/${item.id}`), { order: newOrder });
+                        await update(ref(db, `itinerary/${target.id}`), { order: oldOrder });
+                    }
+                };
+                return { currentSelectedDate, travelDates, sortedItinerary, showModal, modalForm, weatherStatus, moveItem,
+                    openAddModal: () => { modalForm.value = { date: currentSelectedDate.value, type: 'event', category: '景點', order: 99, time: '', location: '', note: '' }; showModal.value = true; }, 
+                    openEditModal: (i) => { modalForm.value = { ...i }; showModal.value = true; }, 
+                    saveItinerary: () => { const r = modalForm.value.id ? ref(db, `itinerary/${modalForm.value.id}`) : push(ref(db, 'itinerary')); set(r, { ...modalForm.value }); showModal.value = false; }, 
+                    deleteItem: (id) => remove(ref(db, `itinerary/${id}`)) 
+                };
             }
         }).mount('#app');
     </script>
