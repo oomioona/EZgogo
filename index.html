@@ -3,77 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EZgo 2026</title>
+    <title>EZgo 2026 夏日東歐探險</title>
+    <!-- Tailwind CSS & FontAwesome -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入 Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        /* 隱藏滾動條但保持滑動功能 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased pb-24">
+<body class="bg-sky-50/60 text-slate-800 font-sans antialiased pb-24 selection:bg-yellow-200">
 
-    <header class="sticky top-0 z-50 bg-indigo-600 text-white shadow-md px-4 py-3 flex justify-between items-center">
-        <div>
-            <h1 class="text-xl font-bold tracking-wide">EZgo East Europe Tour</h1>
-            <p class="text-xs text-indigo-200">維也納 · 布拉格 · 布達佩斯</p>
-        </div>
-        <button id="addBtn" class="bg-pink-500 hover:bg-pink-600 active:scale-95 text-white text-sm font-semibold px-4 py-2 rounded-full shadow transition-all flex items-center gap-1">
-            <i class="fa-solid fa-plus"></i> 新增點
-        </button>
-    </header>
+    <div id="app" class="max-w-md mx-auto min-h-screen bg-white shadow-xl flex flex-col relative">
 
-    <div class="bg-white border-b border-slate-200 sticky top-[60px] z-40 shadow-sm">
-        <div id="day-tabs-container" class="flex gap-3 overflow-x-auto px-4 py-3 no-scrollbar scroll-smooth">
+        <!-- 頂部導覽列：夏日沁涼汽水藍 -->
+        <header class="sticky top-0 z-50 bg-gradient-to-r from-cyan-400 to-blue-400 text-white shadow-md px-4 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-black tracking-wider flex items-center gap-1">
+                    <span>EZgo! Europe Go!</span> 🍋
+                </h1>
+                <p class="text-xs text-cyan-100 font-medium">7/12 - 7/22 東歐盛夏漫遊</p>
             </div>
-    </div>
-
-    <main class="max-w-md mx-auto p-4">
-        <section id="sec-itinerary" class="space-y-4">
-            <div id="itinerary-list" class="space-y-4">
-                <div class="text-center py-8 text-slate-400">
-                    <i class="fa-solid fa-circle-notch animate-spin text-2xl mb-2"></i>
-                    <p class="text-sm">正在連線至 EZgo 雲端基地台...</p>
-                </div>
+            <div class="flex items-center gap-2">
+                <!-- 右上角購物清單按鈕 -->
+                <button @click="currentTab = 'shopping'" :class="currentTab === 'shopping' ? 'bg-pink-400 scale-110 shadow-inner' : 'bg-white/20 hover:bg-white/30'" class="w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer">
+                    <i class="fa-solid fa-bag-shopping text-base text-white"></i>
+                </button>
+                <button @click="openAddModal" class="bg-amber-400 hover:bg-amber-500 active:scale-95 text-slate-900 text-xs font-black px-3 py-2 rounded-full shadow transition-all flex items-center gap-1">
+                    <i class="fa-solid fa-plus"></i> 新增點
+                </button>
             </div>
-        </section>
-    </main>
+        </header>
 
-    <div id="modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl space-y-4">
-            <h3 id="modal-title" class="text-lg font-bold text-slate-800">新增行程點</h3>
-            <input type="hidden" id="edit-id">
-            <div class="space-y-3">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">所屬日期</label>
-                    <input type="text" id="form-date" readonly class="w-full bg-slate-100 border border-slate-200 text-slate-500 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">精確時間</label>
-                    <input type="text" id="form-time" placeholder="例如: 10:00 或 上午" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">地點名稱</label>
-                    <input type="text" id="form-location" placeholder="例如: 聖史蒂芬大教堂" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">隨行備註</label>
-                    <textarea id="form-note" rows="2" placeholder="例如: 拍照角度、交通轉乘提醒..." class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-indigo-500"></textarea>
-                </div>
-            </div>
-            <div class="flex gap-2 justify-end pt-2">
-                <button onclick="closeModal()" class="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 rounded-lg transition-all">取消</button>
-                <button onclick="saveItinerary()" class="px-4 py-2 text-sm bg-indigo-600 text-white font-medium rounded-lg shadow hover:bg-indigo-700 transition-all">儲存至雲端</button>
+        <!-- 橫向滑動天數/功能切換欄位（完美補上日期與天數） -->
+        <div class="bg-white border-b border-cyan-100 sticky top-[72px] z-40 shadow-sm">
+            <div class="flex gap-3 overflow-x-auto px-4 py-3 no-scrollbar scroll-smooth">
+                
+                <!-- PRE 待辦事項按鈕 -->
+                <button @click="currentTab = 'todo'" :class="currentTab === 'todo' ? 'bg-emerald-400 text-white border-emerald-400 shadow-md scale-105' : 'bg-emerald-50 text-emerald-600 border-emerald-100'" class="flex-shrink-0 border px-3 py-2 rounded-2xl text-center min-w-[76px] transition-all duration-200 cursor-pointer">
+                    <p class="text-xs font-black">準備</p>
+                    <p class="text-[10px] font-bold tracking-wider uppercase opacity-80">PRE</p>
+                </button>
+
+                <!-- 11天行程按鈕：上面日期、下面天數，解決 截圖 2026-05-31 下午12.42.28.png 的問題 -->
+                <button v-for="item in travelDates" :key="item.date" @click="selectDate(item.date)" :class="currentTab === 'itinerary' && currentSelectedDate === item.date ? 'bg-amber-400 text-slate-900 shadow-md scale-105 border-amber-400' : 'bg-white text-slate-600 border-slate-200 hover:border-cyan-300'" class="flex-shrink-0 border px-3 py-2 rounded-2xl text-center min-w-[76px] transition-all duration-200 cursor-pointer">
+                    <p class="text-sm font-black">{{ item.date }}</p>
+                    <p class="text-[10px] font-bold tracking-wider opacity-80">Day {{ item.day }}</p>
+                </button>
             </div>
         </div>
+
+        <!-- 主內容顯示區 -->
+        <main class="flex-1 p-4 space-y-4">
+
+            <!-- 頁面一：PRE 出發前準備待辦清單 -->
+            <div v-if="currentTab === 'todo'" class="space-y-4 animate-fadeIn">
+                <div class="bg-gradient-to-br from-emerald-400 to-teal-500 text-white p-4 rounded-3xl shadow-sm">
+                    <h3 class="font-black text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-list"></i> 出發前待辦事項 (TODO)
+                    </h3>
+                    <p class="text-xs text-emerald-100 mt-1">出發前往東歐前，確認物品都帶齊了嗎？</p>
+                </div>
+                
+                <!-- 新增待辦 -->
+                <div class="flex gap-2">
+                    <input v-model="newTodoText" @keyup.enter="addTodoItem" type="text" placeholder="例如：拿全家的歐元現鈔..." class="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-emerald-400">
+                    <button @click="addTodoItem" class="bg-emerald-500 text-white px-4 rounded-xl text-sm font-bold active:scale-95 transition-all">新增</button>
+                </div>
+
+                <!-- 待辦列表 -->
+                <div class="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-50 shadow-sm">
+                    <div v-for="(todo, id) in todoList" :key="id" class="flex items-center justify-between p-4">
+                        <label class="flex items-center gap-3 cursor-pointer flex-1">
+                            <input type="checkbox" :checked="todo.done" @change="toggleTodo(id, todo.done)" class="w-5 h-5 accent-emerald-500 rounded-md">
+                            <span :class="todo.done ? 'line-through text-slate-400 font-normal' : 'font-semibold text-slate-700'">{{ todo.text }}</span>
+                        </label>
+                        <button @click="deleteTodo(id)" class="text-slate-300 hover:text-rose-500 p-1"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                    <div v-if="Object.keys(todoList).length === 0" class="text-center py-8 text-slate-400 text-sm">目前沒有待辦事項，快去新增吧！</div>
+                </div>
+            </div>
+
+            <!-- 頁面二：右上方購物清單 -->
+            <div v-if="currentTab === 'shopping'" class="space-y-4 animate-fadeIn">
+                <div class="bg-gradient-to-br from-pink-400 to-rose-400 text-white p-4 rounded-3xl shadow-sm">
+                    <h3 class="font-black text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-bag-shopping"></i> 盛夏東歐蜜桃購物清單
+                    </h3>
+                    <p class="text-xs text-pink-100 mt-1">記錄要幫自己、家人和 Threads 粉絲開箱的必買伴手禮！</p>
+                </div>
+
+                <div class="flex gap-2">
+                    <input v-model="newShoppingText" @keyup.enter="addShoppingItem" type="text" placeholder="例如：捷克刺蝟鉛筆、溫泉餅..." class="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-pink-400">
+                    <button @click="addShoppingItem" class="bg-pink-500 text-white px-4 rounded-xl text-sm font-bold active:scale-95 transition-all">新增</button>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-50 shadow-sm">
+                    <div v-for="(shop, id) in shoppingList" :key="id" class="flex items-center justify-between p-4">
+                        <label class="flex items-center gap-3 cursor-pointer flex-1">
+                            <input type="checkbox" :checked="shop.bought" @change="toggleShopping(id, shop.bought)" class="w-5 h-5 accent-pink-500 rounded-md">
+                            <span :class="shop.bought ? 'line-through text-slate-400' : 'font-semibold text-slate-700'">{{ shop.text }}</span>
+                        </label>
+                        <button @click="deleteShopping(id)" class="text-slate-300 hover:text-rose-500 p-1"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                    <div v-if="Object.keys(shoppingList).length === 0" class="text-center py-8 text-slate-400 text-sm">購物清單空空如也 📦</div>
+                </div>
+            </div>
+
+            <!-- 頁面三：主要行程表與 免權限免密鑰 Google 地圖 -->
+            <div v-if="currentTab === 'itinerary'" class="space-y-5 animate-fadeIn">
+                
+                <!-- 更改為免 API 密鑰的 Google Maps Embed，徹底解決拒絕請求的錯誤 -->
+                <div class="w-full h-48 rounded-2xl overflow-hidden shadow-md border border-cyan-100 relative bg-slate-100">
+                    <iframe 
+                        class="w-full h-full border-0"
+                        loading="lazy"
+                        allowfullscreen
+                        :src="'https://maps.google.com/maps?q=' + encodeURIComponent(currentDayMapQuery) + '&t=&z=13&ie=UTF8&iwloc=&output=embed'">
+                    </iframe>
+                    <div class="absolute bottom-2 left-2 bg-slate-900/70 text-white text-[10px] px-2 py-0.5 rounded-full backdrop-blur-xs flex items-center gap-1">
+                        <i class="fa-solid fa-map-pin text-amber-400 animate-bounce"></i> 當日焦點區域地圖
+                    </div>
+                </div>
+
+                <!-- 行程卡片時間軸 -->
+                <div class="space-y-4 relative before:absolute before:top-2 before:bottom-2 before:left-3.5 before:w-0.5 before:bg-cyan-100">
+                    
+                    <div v-for="item in sortedItinerary" :key="item.id" class="flex gap-4 items-start relative group">
+                        
+                        <div class="w-7 h-7 rounded-full bg-cyan-400 text-white flex items-center justify-center font-bold text-[10px] shadow-xs z-10 flex-shrink-0 ring-4 ring-white mt-1">
+                            📍
+                        </div>
+
+                        <div class="flex-1 bg-white p-4 rounded-2xl border border-slate-100 shadow-xs hover:shadow-md transition-all space-y-2">
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="bg-cyan-50 text-cyan-600 text-xs font-black px-2 py-0.5 rounded-md tracking-wider">{{ item.time }}</span>
+                                        <h4 class="text-base font-black text-slate-800 tracking-tight">{{ item.location }}</h4>
+                                    </div>
+                                </div>
+                                <div class="flex gap-2 text-slate-300">
+                                    <!-- 點擊直接開啟手機 Google Maps App 幫全家導航 -->
+                                    <a :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(item.location)" target="_blank" class="text-sky-400 hover:text-sky-600 p-1 text-sm flex items-center justify-center bg-sky-50 w-7 h-7 rounded-full" title="導航">
+                                        <i class="fa-solid fa-location-arrow"></i>
+                                    </a>
+                                    <button @click="openEditModal(item)" class="text-slate-400 hover:text-amber-500 p-1 text-sm"><i class="fa-solid fa-pen"></i></button>
+                                    <button @click="deleteItem(item.id)" class="text-slate-400 hover:text-rose-500 p-1 text-sm"><i class="fa-solid fa-trash-can"></i></button>
+                                </div>
+                            </div>
+                            <p class="text-sm font-medium text-slate-600 leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-100/50">{{ item.note || '🎉 享受當下的美好時光！' }}</p>
+                        </div>
+                    </div>
+
+                    <!-- 空白行程提示 -->
+                    <div v-if="sortedItinerary.length === 0" class="text-center py-12 bg-white rounded-3xl border border-dashed border-cyan-200 p-6">
+                        <p class="text-slate-400 text-sm font-medium mb-3">🥤 這天還空空的，喝杯夏日汽水來排行程吧！</p>
+                        <button @click="openAddModal" class="inline-flex items-center gap-1 bg-amber-400 text-slate-900 text-xs font-black px-4 py-2 rounded-full shadow hover:bg-amber-500 transition-all cursor-pointer">
+                            <i class="fa-solid fa-plus"></i> 把這天填滿行程
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+
+        <!-- 彈出視窗：新增/修改行程 -->
+        <div v-if="showModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4 border border-cyan-50">
+                <h3 class="text-lg font-black text-slate-800">
+                    <span>{{ modalForm.id ? '✏️ 修改行程點' : '🚀 新增行程點' }}</span>
+                </h3>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1">所屬日期</label>
+                        <input type="text" v-model="modalForm.date" readonly class="w-full bg-slate-50 border border-slate-100 text-slate-500 rounded-xl px-3 py-2 text-sm focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">精確時間 (例如: 10:00)</label>
+                        <input type="text" v-model="modalForm.time" placeholder="例如: 10:00" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-cyan-400 font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">地點名稱 (地圖搜尋用)</label>
+                        <input type="text" v-model="modalForm.location" placeholder="例如: 布拉格天文鐘" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-cyan-400 font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">隨行備註</label>
+                        <textarea v-model="modalForm.note" rows="2" placeholder="備註..." class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-cyan-400 font-medium"></textarea>
+                    </div>
+                </div>
+                <div class="flex gap-2 justify-end pt-2">
+                    <button @click="showModal = false" class="px-4 py-2 text-sm font-bold text-slate-400 hover:bg-slate-50 rounded-xl transition-all cursor-pointer">取消</button>
+                    <button @click="saveItinerary" class="px-4 py-2 text-sm bg-gradient-to-r from-cyan-400 to-blue-400 text-white font-black rounded-xl shadow-md hover:opacity-90 transition-all cursor-pointer">儲存變更</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
+    <!-- Firebase 連接與 Vue 驅動核心 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // 妳的專屬 Firebase 金鑰
         const firebaseConfig = {
             apiKey: "AIzaSyC1J_aczvdTwUwjJd2HguKym7suF4XOS_A",
             authDomain: "ezgogo-c29e5.firebaseapp.com",
@@ -84,217 +218,134 @@
             measurementId: "G-E7MGDNKGXL"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        const fApp = initializeApp(firebaseConfig);
+        const db = getDatabase(fApp);
 
-        window.dbRef = { ref, set, onValue, push, remove, db };
-    </script>
+        const { createApp, ref: vRef, computed, onMounted } = Vue;
 
-    <script>
-        // 定義 11 天完整的日期對照表
-        const travelDates = [
-            { day: 1, date: "7/12", label: "7/12 (日)" },
-            { day: 2, date: "7/13", label: "7/13 (一)" },
-            { day: 3, date: "7/14", label: "7/14 (二)" },
-            { day: 4, date: "7/15", label: "7/15 (三)" },
-            { day: 5, date: "7/16", label: "7/16 (四)" },
-            { day: 6, date: "7/17", label: "7/17 (五)" },
-            { day: 7, date: "7/18", label: "7/18 (六)" },
-            { day: 8, date: "7/19", label: "7/19 (日)" },
-            { day: 9, date: "7/20", label: "7/20 (一)" },
-            { day: 10, date: "7/21", label: "7/21 (二)" },
-            { day: 11, date: "7/22", label: "7/22 (三)" }
-        ];
+        createApp({
+            setup() {
+                const currentTab = vRef('itinerary'); 
+                const currentSelectedDate = vRef('7/12');
+                const globalItineraryData = vRef({});
+                const todoList = vRef({});
+                const shoppingList = vRef({});
 
-        let currentSelectedDate = "7/12";
-        let globalItineraryData = null;
+                const showModal = vRef(false);
+                const modalForm = vRef({ id: '', date: '', time: '', location: '', note: '' });
 
-        // 生成上方滾動式天數按鈕
-        function renderDayTabs() {
-            const container = document.getElementById('day-tabs-container');
-            container.innerHTML = '';
+                const newTodoText = vRef('');
+                const newShoppingText = vRef('');
 
-            travelDates.forEach(item => {
-                const isActive = item.date === currentSelectedDate;
-                const activeClass = isActive 
-                    ? "bg-amber-500 text-white shadow-md scale-105 border-amber-500 animate-none" 
-                    : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300";
-
-                container.innerHTML += `
-                    <button onclick="selectDate('${item.date}')" id="btn-date-${item.date.replace('/', '-')}" class="flex-shrink-0 border px-4 py-2 rounded-2xl text-center min-w-[76px] transition-all duration-200 cursor-pointer ${activeClass}">
-                        <p class="text-[10px] font-bold tracking-wider opacity-80">Day ${item.day}</p>
-                        <p class="text-sm font-black mt-0.5">${item.date}</p>
-                    </button>
-                `;
-            });
-        }
-
-        function selectDate(date) {
-            currentSelectedDate = date;
-            renderDayTabs();
-            renderItineraryList();
-        }
-
-        // 💥 重頭戲：直接將妳們討論出的真實東歐行程打包進去作為雲端初始資料！
-        function checkAndInitDefaultData(db, ref, set, push, listData) {
-            if (!listData) {
-                const myRealItinerary = [
-                    // Day 1: 7/12
-                    { date: "7/12", time: "23:30", location: "桃園機場 ✈️ 啟航東歐", note: "大約深夜時段起飛。出發度假囉！提醒爸爸媽媽穿著舒適衣物，隨身行李注意安全。" },
-                    
-                    // Day 2: 7/13
-                    { date: "7/13", time: "06:15", location: "抵達維也納機場 🇦🇹", note: "預計清晨六點多降落。辦理入境、拿行李，搭乘便捷交通前往市區。" },
-                    { date: "7/13", time: "10:30", location: "維也納中央車站旁飯店 (大略位置)", note: "先到火車站附近的飯店辦理 Check-in 或寄放行李。全家稍微梳洗、伸展一下，洗去長途飛行的疲憊。" },
-                    { date: "7/13", time: "14:00", location: "聖史蒂芬大教堂 ＆ 葛拉本大道漫步", note: "維也納最經典的地標！帶爸媽看雄偉的哥德式建築，在精品步行街喝杯道地的維也納咖啡，開啟慢活調時差的一天。" },
-                    
-                    // Day 3: 7/14
-                    { date: "7/14", time: "09:30", location: "熊布朗宮 (美泉宮) 皇家花園", note: "欣賞哈布斯堡王朝的奢華夏宮，花園超大超漂亮，非常適合幫爸媽拍網美照留念。" },
-                    { date: "7/14", time: "15:00", location: "藝術史博物館 / 霍夫堡皇宮", note: "感受音樂之都的濃厚藝術氣息，漫步在宏偉的皇家廣場上。" },
-                    { date: "7/14", time: "19:30", location: "維也納金色大廳 🎵 莫札特音樂會", note: "實際演出行程！全家換上正式優雅的服裝，親臨世界上最頂級的音樂聖殿，現場聆聽震撼心靈的古典樂章。" },
-                    
-                    // Day 4: 7/15
-                    { date: "7/15", time: "09:10", location: "維也納中央車站 🚄 搭乘高鐵 OBB", note: "準備移動！搭乘上午九點多的跨國列車前往千塔之城布拉格。車程約 4 小時，可在車上沿途欣賞中歐的鄉村田園風光。" },
-                    { date: "7/15", time: "13:15", location: "抵達布拉格中央車站 🇨🇿", note: "順利抵達捷克！出站後搭車前往飯店。" },
-                    { date: "7/15", time: "14:30", location: "布拉格舊城區飯店 (大略位置)", note: "辦理 Check-in 放置大行李，稍微休息一下。" },
-                    { date: "7/15", time: "16:00", location: "布拉格舊城廣場 ＆ 天文鐘", note: "朝聖著名的魔幻廣場！等待整點的天文鐘報時表演，附近有很多特色市集跟街頭藝人，非常有中世紀童話氛圍。" },
-                    
-                    // Day 5: 7/16
-                    { date: "7/16", time: "09:30", location: "查理大橋 🌉 晨間漫步", note: "早上的查理大橋遊客較少，空氣超好。兩側的聖者雕像搭配伏爾塔瓦河景，全家人一起在這裡拍下最珍貴的合照！" },
-                    { date: "7/16", time: "11:30", location: "朝聖人氣烘焙坊 (特色可頌點心)", note: "點名朝聖！買當地超夯的巨無霸可頌和傳統煙囪捲，外酥內軟，全家一起品嚐精緻的歐式午茶甜點。" },
-                    { date: "7/16", time: "14:00", location: "布拉格城堡區 🏰 聖維特大教堂", note: "沿著舊城石子路爬上城堡區，俯瞰整個紅磚瓦屋頂的布拉格全景，參觀極具震撼力的彩色玻璃窗。" }
+                // 完美補上日期與 Day 對照表
+                const travelDates = [
+                    { day: 1, date: "7/12" }, { day: 2, date: "7/13" }, { day: 3, date: "7/14" },
+                    { day: 4, date: "7/15" }, { day: 5, date: "7/16" }, { day: 6, date: "7/17" },
+                    { day: 7, date: "7/18" }, { day: 8, date: "7/19" }, { day: 9, date: "7/20" },
+                    { day: 10, date: "7/21" }, { day: 11, date: "7/22" }
                 ];
-                
-                myRealItinerary.forEach(item => {
-                    const newRef = push(ref(db, 'itinerary'));
-                    set(newRef, item);
+
+                const sortedItinerary = computed(() => {
+                    if (!globalItineraryData.value) return [];
+                    return Object.entries(globalItineraryData.value)
+                        .map(([id, val]) => ({ id, ...val }))
+                        .filter(item => item.date === currentSelectedDate.value)
+                        .sort((a, b) => a.time.localeCompare(b.time));
                 });
-            }
-        }
 
-        // 渲染行程卡片
-        function renderItineraryList() {
-            const container = document.getElementById('itinerary-list');
-            container.innerHTML = '';
+                const currentDayMapQuery = computed(() => {
+                    if (sortedItinerary.value.length === 0) {
+                        return currentSelectedDate.value === '7/12' || currentSelectedDate.value === '7/13' || currentSelectedDate.value === '7/14' ? 'Vienna' : 'Prague';
+                    }
+                    return sortedItinerary.value.map(item => item.location).join(' ');
+                });
 
-            if (!globalItineraryData) {
-                container.innerHTML = `
-                    <div class="text-center py-12 text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
-                        <i class="fa-solid fa-map-location-dot text-3xl mb-2 text-slate-300"></i>
-                        <p class="text-sm">正在連線至雲端資料庫...</p>
-                    </div>`;
-                return;
-            }
-
-            const filteredItems = Object.entries(globalItineraryData)
-                .map(([key, val]) => ({ id: key, ...val }))
-                .filter(item => item.date === currentSelectedDate);
-
-            if (filteredItems.length === 0) {
-                const currentLabel = travelDates.find(d => d.date === currentSelectedDate)?.label || currentSelectedDate;
-                container.innerHTML = `
-                    <div class="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200 p-6">
-                        <p class="text-slate-400 text-sm mb-3">📅 ${currentLabel} 目前還沒有排行程喔！</p>
-                        <button onclick="triggerAddModal()" class="inline-flex items-center gap-1 bg-indigo-50 text-indigo-600 text-xs font-bold px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-all cursor-pointer">
-                            <i class="fa-solid fa-plus"></i> 把這天填滿行程
-                        </button>
-                    </div>`;
-                return;
-            }
-
-            // 按照時間排序
-            filteredItems.sort((a, b) => a.time.localeCompare(b.time));
-
-            filteredItems.forEach(item => {
-                container.innerHTML += `
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-start justify-between gap-3 hover:shadow-md transition-all">
-                        <div class="space-y-1">
-                            <div class="flex items-center gap-2">
-                                <span class="bg-indigo-50 text-indigo-600 text-xs font-bold px-2 py-0.5 rounded-md">${item.time}</span>
-                                <h4 class="font-bold text-slate-800">${item.location}</h4>
-                            </div>
-                            <p class="text-sm text-slate-500 pl-1 leading-relaxed">${item.note || '無備註'}</p>
-                        </div>
-                        <div class="flex gap-2 text-slate-300">
-                            <button onclick="openEditModal('${item.id}', '${item.date}', '${item.time}', '${item.location}', \`${item.note || ''}\`)" class="text-slate-400 hover:text-indigo-600 p-1 text-sm cursor-pointer"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteItem('${item.id}')" class="text-slate-400 hover:text-rose-500 p-1 text-sm cursor-pointer"><i class="fa-solid fa-trash-can"></i></button>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        // 連接 Firebase
-        setTimeout(() => {
-            if(!window.dbRef) return;
-            const { db, ref, onValue, set, push } = window.dbRef;
-
-            let isFirstLoad = true;
-
-            onValue(ref(db, 'itinerary'), (snapshot) => {
-                const listData = snapshot.val();
-                
-                if (isFirstLoad && !listData) {
-                    checkAndInitDefaultData(db, ref, set, push, listData);
-                    isFirstLoad = false;
-                    return; 
+                function selectDate(date) {
+                    currentTab.value = 'itinerary';
+                    currentSelectedDate.value = date;
                 }
-                isFirstLoad = false;
 
-                globalItineraryData = listData;
-                renderItineraryList();
-            });
+                function openAddModal() {
+                    modalForm.value = { id: '', date: currentSelectedDate.value, time: '', location: '', note: '' };
+                    showModal.value = true;
+                }
 
-        }, 1000);
+                function openEditModal(item) {
+                    modalForm.value = { ...item };
+                    showModal.value = true;
+                }
 
-        renderDayTabs();
+                function saveItinerary() {
+                    if (!modalForm.value.time || !modalForm.value.location) {
+                        alert('時間和地點一定要填寫哦！');
+                        return;
+                    }
+                    const targetRef = modalForm.value.id 
+                        ? ref(db, `itinerary/${modalForm.value.id}`) 
+                        : push(ref(db, 'itinerary'));
 
-        const modal = document.getElementById('modal');
-        
-        function triggerAddModal() {
-            document.getElementById('modal-title').innerText = "新增行程點";
-            document.getElementById('edit-id').value = '';
-            document.getElementById('form-date').value = currentSelectedDate;
-            document.getElementById('form-time').value = '';
-            document.getElementById('form-location').value = '';
-            document.getElementById('form-note').value = '';
-            modal.classList.remove('hidden');
-        }
+                    set(targetRef, {
+                        date: modalForm.value.date,
+                        time: modalForm.value.time,
+                        location: modalForm.value.location,
+                        note: modalForm.value.note
+                    }).then(() => { showModal.value = false; });
+                }
 
-        document.getElementById('addBtn').addEventListener('click', triggerAddModal);
-        function closeModal() { modal.classList.add('hidden'); }
+                function deleteItem(id) {
+                    if (confirm('確定要刪除這條行程嗎？')) {
+                        remove(ref(db, `itinerary/${id}`));
+                    }
+                }
 
-        function openEditModal(id, date, time, location, note) {
-            document.getElementById('modal-title').innerText = "修改行程點";
-            document.getElementById('edit-id').value = id;
-            document.getElementById('form-date').value = date;
-            document.getElementById('form-time').value = time;
-            document.getElementById('form-location').value = location;
-            document.getElementById('form-note').value = note;
-            modal.classList.remove('hidden');
-        }
+                function addTodoItem() {
+                    if (!newTodoText.value.trim()) return;
+                    const newRef = push(ref(db, 'todos'));
+                    set(newRef, { text: newTodoText.value.trim(), done: false }).then(() => {
+                        newTodoText.value = '';
+                    });
+                }
+                function toggleTodo(id, currentStatus) {
+                    set(ref(db, `todos/${id}/done`), !currentStatus);
+                }
+                function deleteTodo(id) {
+                    remove(ref(db, `todos/${id}`));
+                }
 
-        function saveItinerary() {
-            const id = document.getElementById('edit-id').value;
-            const date = document.getElementById('form-date').value;
-            const time = document.getElementById('form-time').value.trim();
-            const location = document.getElementById('form-location').value.trim();
-            const note = document.getElementById('form-note').value.trim();
+                function addShoppingItem() {
+                    if (!newShoppingText.value.trim()) return;
+                    const newRef = push(ref(db, 'shopping'));
+                    set(newRef, { text: newShoppingText.value.trim(), bought: false }).then(() => {
+                        newShoppingText.value = '';
+                    });
+                }
+                function toggleShopping(id, currentStatus) {
+                    set(ref(db, `shopping/${id}/bought`), !currentStatus);
+                }
+                function deleteShopping(id) {
+                    remove(ref(db, `shopping/${id}`));
+                }
 
-            if(!time || !location) { alert('時間和地點都要填寫喔！'); return; }
+                onMounted(() => {
+                    onValue(ref(db, 'itinerary'), (snapshot) => {
+                        globalItineraryData.value = snapshot.val() || {};
+                    });
+                    onValue(ref(db, 'todos'), (snapshot) => {
+                        todoList.value = snapshot.val() || {};
+                    });
+                    onValue(ref(db, 'shopping'), (snapshot) => {
+                        shoppingList.value = snapshot.val() || {};
+                    });
+                });
 
-            const { db, ref, set, push } = window.dbRef;
-            const targetRef = id ? ref(db, `itinerary/${id}`) : push(ref(db, 'itinerary'));
-            
-            set(targetRef, { date, time, location, note }).then(() => {
-                closeModal();
-            }).catch(err => alert('同步失敗，請檢查網路！'));
-        }
-
-        function deleteItem(id) {
-            if(confirm('確定要刪除這條雲端資料嗎？全家人手機會即時同步刪除喔！')) {
-                const { db, ref, remove } = window.dbRef;
-                remove(ref(db, `itinerary/${id}`));
+                return {
+                    currentTab, currentSelectedDate, travelDates, sortedItinerary, currentDayMapQuery,
+                    showModal, modalForm, openAddModal, openEditModal, saveItinerary, deleteItem, selectDate,
+                    todoList, newTodoText, addTodoItem, toggleTodo, deleteTodo,
+                    shoppingList, newShoppingText, addShoppingItem, toggleShopping, deleteShopping
+                };
             }
-        }
+        }).mount('#app');
     </script>
 </body>
 </html>
